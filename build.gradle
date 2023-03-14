@@ -1,0 +1,23 @@
+plugins {
+    id 'groovy'
+}
+
+group 'com.atzu68.learning.gia'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation fileTree('/Users/champion/Distributions/Groovy/SDK/groovy-4.0.9/lib') {
+        include '*.jar'
+        include '*/*.jar'
+    }
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+test {
+    useJUnitPlatform()
+}
