@@ -67,7 +67,7 @@ class CommandLineInputHandler {
     }
 
     private ToDoItem findToDoItem() {
-        def id = askForItemId();
+        def id = askForItemId()
         def toDoItem = toDoRepository.findById(id)
 
         if (!toDoItem) System.err.println "To do item with ID $id could not be found."
@@ -97,11 +97,11 @@ class CommandLineInputHandler {
     private void deleteToDoItem() {
         findToDoItem()?.with {
             toDoRepository.delete(it)
-            System.out.println("Successfully deleted to do item with ID $id.");
+            System.out.println("Successfully deleted to do item with ID $id.")
         }
     }
 
     static private void handleUnknownInput() {
-        System.out.println("Please select a valid option!");
+        System.out.println("Please select a valid option!")
     }
 }
