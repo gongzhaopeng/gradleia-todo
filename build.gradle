@@ -3,7 +3,9 @@ plugins {
 }
 
 group 'com.atzu68.learning.gia'
-version '1.0-SNAPSHOT'
+version '0.1'
+
+sourceCompatibility = 17
 
 repositories {
     mavenCentral()
@@ -20,4 +22,14 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.atzu68.learning.gia.todo.ToDoApp'
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
