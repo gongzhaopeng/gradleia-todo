@@ -5,7 +5,7 @@ import groovy.transform.Sortable
 import groovy.transform.ToString
 
 @EqualsAndHashCode
-@ToString
+@ToString(includePackage = false, includeNames = true)
 @Sortable(includes = "id")
 class ToDoItem {
     Long id

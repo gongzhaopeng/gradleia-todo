@@ -56,7 +56,9 @@ class CommandLineInputHandler {
 
     private void printAllToDoItems() {
         toDoRepository.findAll().with {
-            if (empty) println "Nothing to do. Go relax!" else each { println it }
+            if (empty)
+                println "Nothing to do. Go relax!"
+            else forEach { println it }
         }
     }
 
