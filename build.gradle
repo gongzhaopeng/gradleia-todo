@@ -24,6 +24,21 @@ test {
     useJUnitPlatform()
 }
 
+sourceSets {
+    main {
+        groovy {
+            ['src/main/groovy']
+        }
+    }
+    test {
+        groovy {
+            ['src/test/groovy']
+        }
+    }
+}
+
+buildDir = 'build'
+
 jar {
     manifest {
         attributes 'Main-Class': 'com.atzu68.learning.gia.todo.ToDoApp'
