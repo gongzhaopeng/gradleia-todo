@@ -1,15 +1,27 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.gretty:gretty:3.0.5")
+    }
+}
+
 plugins {
     id 'groovy'
+    id 'war'
 }
+
+apply plugin: "org.gretty"
 
 group 'com.atzu68.learning.gia'
 version '0.1'
 
-sourceCompatibility = 17
-
 repositories {
     mavenCentral()
 }
+
+targetCompatibility 1.8
 
 dependencies {
     implementation fileTree('/Users/champion/Distributions/Groovy/SDK/groovy-4.0.9/lib') {
@@ -18,8 +30,10 @@ dependencies {
     }
     implementation 'org.apache.commons:commons-lang3:3.12.0'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    providedCompile 'javax.servlet:javax.servlet-api:4.0.1',
+            'javax.servlet.jsp:javax.servlet.jsp-api:2.3.3'
+    runtimeOnly 'javax.servlet:jstl:1.1.2',
+            'taglibs:standard:1.1.2'
 }
 
 test {
@@ -40,6 +54,12 @@ sourceSets {
 }
 
 buildDir = 'build'
+
+webAppDirName 'src/main/webapp'
+
+war {
+    from 'src/main/webapp'
+}
 
 jar {
     manifest {
