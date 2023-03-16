@@ -21,10 +21,10 @@ repositories {
     mavenCentral()
 }
 
-targetCompatibility 1.8
+targetCompatibility = 1.8
 
 dependencies {
-    implementation fileTree('/Users/champion/Distributions/Groovy/SDK/groovy-4.0.9/lib') {
+    implementation fileTree('/Users/atzu68/Distribution/Groovy/SDK/groovy-4.0.9/lib') {
         include '*.jar'
         include '*/*.jar'
     }
@@ -55,7 +55,7 @@ sourceSets {
 
 buildDir = 'build'
 
-webAppDirName 'src/main/webapp'
+webAppDirName = 'src/main/webapp'
 
 war {
     from 'src/main/webapp'
