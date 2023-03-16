@@ -70,3 +70,8 @@ jar {
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
+
+gretty {
+    httpPort = 8081
+    contextPath = '/todo'
+}
