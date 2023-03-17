@@ -105,14 +105,14 @@ gretty {
     contextPath = '/todo'
 }
 
-tasks.register('makeReleaseVersion', ReleaseVersionTask) {
-
-    release = version.release
-    destFile = versionFile
-}
+//tasks.register('makeReleaseVersion', ReleaseVersionTask) {
+//
+//    release = version.release
+//    destFile = versionFile
+//}
 
 tasks.register('createDistribution', Zip) {
-    dependsOn('makeReleaseVersion')
+//    dependsOn('makeReleaseVersion')
 
     from war.outputs.files
 
@@ -151,6 +151,18 @@ tasks.addRule("Pattern: increment<Classifier>Version – Increments the project 
             logger.info "Incrementing $classifier project version: $currentVersion -> $version"
             ant.propertyfile(file: versionFile) {
                 entry(key: classifier, type: 'int', operation: '+', value: 1)
+            }
+        }
+    }
+}
+
+gradle.taskGraph.whenReady { TaskExecutionGraph taskGraph ->
+    println 'whenReady'
+    if (taskGraph.hasTask('release')) {
+        if (!version.release) {
+            version.release = true
+            ant.propertyfile(file: versionFile) {
+                entry(key: 'release', type: 'string', operation: '=', value: 'true')
             }
         }
     }
