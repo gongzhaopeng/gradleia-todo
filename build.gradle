@@ -1,3 +1,5 @@
+import groovy.transform.TupleConstructor
+
 buildscript {
     repositories {
         mavenCentral()
@@ -22,6 +24,60 @@ repositories {
 }
 
 targetCompatibility = 1.8
+
+ext.versionFile = file('version.properties')
+
+task loadVersion {
+    version = readVersion()
+}
+
+ProjectVersion readVersion() {
+    logger.quiet 'Reading the version file.'
+
+    if (!versionFile.exists()) {
+        throw new GradleException("Required version file does not exist: $versionFile.canonicalPath")
+    }
+
+    def versionProps = new Properties()
+
+    versionFile.withInputStream { stream -> versionProps.load(stream)
+    }
+
+    new ProjectVersion(versionProps.major.toInteger(),
+            versionProps.minor.toInteger(), versionProps.release.toBoolean())
+}
+
+class ReleaseVersionTask extends DefaultTask {
+    @Input
+    Boolean release
+    @OutputFile
+    File destFile
+
+    ReleaseVersionTask() {
+        group = 'versioning'
+        description = 'Makes project a release version.'
+    }
+
+    @TaskAction
+    void start() {
+        project.version.release = true
+        ant.propertyfile(file: destFile) {
+            entry(key: 'release', type: 'string', operation: '=', value: 'true')
+        }
+    }
+}
+
+@TupleConstructor
+class ProjectVersion {
+    int major
+    int minor
+    boolean release
+
+    @Override
+    String toString() {
+        return "$major.$minor${release ? '' : '-SNAPSHOT'}"
+    }
+}
 
 dependencies {
     implementation fileTree('/Users/atzu68/Distribution/Groovy/SDK/groovy-4.0.9/lib') {
@@ -78,4 +134,35 @@ jar {
 gretty {
     httpPort = 8081
     contextPath = '/todo'
+}
+
+tasks.register('makeReleaseVersion', ReleaseVersionTask) {
+
+    release = version.release
+    destFile = versionFile
+}
+
+tasks.register('createDistribution', Zip) {
+    dependsOn('makeReleaseVersion')
+
+    from war.outputs.files
+
+    from(sourceSets*.allSource) {
+        into 'src'
+    }
+
+    from(rootDir) {
+        include versionFile.name
+    }
+}
+
+tasks.register('backupReleaseDistribution', Copy) {
+    from createDistribution.outputs.files
+    into "$buildDir/backup"
+}
+
+tasks.register('release') {
+    dependsOn('backupReleaseDistribution')
+
+    logger.quiet 'Releasing the project...'
 }
