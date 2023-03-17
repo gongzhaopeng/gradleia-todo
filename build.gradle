@@ -1,4 +1,5 @@
-import groovy.transform.TupleConstructor
+import com.atzu68.learning.gia.ProjectVersion
+import com.atzu68.learning.gia.ReleaseVersionTask
 
 buildscript {
     repositories {
@@ -45,38 +46,6 @@ ProjectVersion readVersion() {
 
     new ProjectVersion(versionProps.major.toInteger(),
             versionProps.minor.toInteger(), versionProps.release.toBoolean())
-}
-
-class ReleaseVersionTask extends DefaultTask {
-    @Input
-    Boolean release
-    @OutputFile
-    File destFile
-
-    ReleaseVersionTask() {
-        group = 'versioning'
-        description = 'Makes project a release version.'
-    }
-
-    @TaskAction
-    void start() {
-        project.version.release = true
-        ant.propertyfile(file: destFile) {
-            entry(key: 'release', type: 'string', operation: '=', value: 'true')
-        }
-    }
-}
-
-@TupleConstructor
-class ProjectVersion {
-    int major
-    int minor
-    boolean release
-
-    @Override
-    String toString() {
-        return "$major.$minor${release ? '' : '-SNAPSHOT'}"
-    }
 }
 
 dependencies {
