@@ -1,5 +1,6 @@
 import com.atzu68.learning.gia.ProjectVersion
 import com.atzu68.learning.gia.ReleaseVersionTask
+import com.atzu68.learning.gia.ReleaseVersionListener
 
 buildscript {
     repositories {
@@ -156,13 +157,15 @@ tasks.addRule("Pattern: increment<Classifier>Version – Increments the project 
     }
 }
 
-gradle.taskGraph.whenReady { TaskExecutionGraph taskGraph ->
-    if (taskGraph.hasTask(release)) {
-        if (!version.release) {
-            version.release = true
-            ant.propertyfile(file: versionFile) {
-                entry(key: 'release', type: 'string', operation: '=', value: 'true')
-            }
-        }
-    }
-}
+//gradle.taskGraph.whenReady { TaskExecutionGraph taskGraph ->
+//    if (taskGraph.hasTask(release)) {
+//        if (!version.release) {
+//            version.release = true
+//            ant.propertyfile(file: versionFile) {
+//                entry(key: 'release', type: 'string', operation: '=', value: 'true')
+//            }
+//        }
+//    }
+//}
+
+gradle.taskGraph.addTaskExecutionGraphListener(new ReleaseVersionListener())
