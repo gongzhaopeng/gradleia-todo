@@ -49,7 +49,7 @@ ProjectVersion readVersion() {
 }
 
 dependencies {
-    implementation fileTree('/Users/champion/Distributions/Groovy/SDK/groovy-4.0.9/lib') {
+    implementation fileTree("${System.properties['user.home']}/Distribution/Groovy/SDK/groovy-4.0.9/lib") {
         include '*.jar'
         include '*/*.jar'
     }
@@ -112,7 +112,7 @@ gretty {
 //}
 
 tasks.register('createDistribution', Zip) {
-//    dependsOn('makeReleaseVersion')
+//    dependsOn(makeReleaseVersion)
 
     from war.outputs.files
 
@@ -131,7 +131,7 @@ tasks.register('backupReleaseDistribution', Copy) {
 }
 
 tasks.register('release') {
-    dependsOn('backupReleaseDistribution')
+    dependsOn(backupReleaseDistribution)
 
     logger.quiet 'Releasing the project...'
 }
@@ -157,8 +157,7 @@ tasks.addRule("Pattern: increment<Classifier>Version – Increments the project 
 }
 
 gradle.taskGraph.whenReady { TaskExecutionGraph taskGraph ->
-    println 'whenReady'
-    if (taskGraph.hasTask('release')) {
+    if (taskGraph.hasTask(release)) {
         if (!version.release) {
             version.release = true
             ant.propertyfile(file: versionFile) {
