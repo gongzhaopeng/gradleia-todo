@@ -166,3 +166,23 @@ tasks.register('release') {
 
     logger.quiet 'Releasing the project...'
 }
+
+tasks.addRule("Pattern: increment<Classifier>Version – Increments the project version classifier.") { String taskName ->
+    if (taskName.startsWith('increment') && taskName.endsWith('Version')) {
+        tasks.register(taskName) {
+            String classifier = (taskName - 'increment' - 'Version').toLowerCase()
+            String currentVersion = version
+            switch (classifier) {
+                case 'major': version.major++
+                    break
+                case 'minor': version.minor++
+                    break
+                default: throw new GradleException("Invalid version type '$classifier. Allowed types: ['Major', 'Minor']")
+            }
+            logger.info "Incrementing $classifier project version: $currentVersion -> $version"
+            ant.propertyfile(file: versionFile) {
+                entry(key: classifier, type: 'int', operation: '+', value: 1)
+            }
+        }
+    }
+}
