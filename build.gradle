@@ -21,6 +21,13 @@ apply plugin: "org.gretty"
 group 'com.atzu68.learning.gia'
 version '0.1'
 
+configurations {
+    cargo {
+        description = 'Classpath for Cargo Ant tasks.'
+        visible = false
+    }
+}
+
 repositories {
     mavenCentral()
 }
@@ -49,6 +56,9 @@ ProjectVersion readVersion() {
             versionProps.minor.toInteger(), versionProps.release.toBoolean())
 }
 
+ext.cargoGroup = 'org.codehaus.cargo'
+ext.cargoVersion = '1.9.13'
+
 dependencies {
     implementation fileTree("${System.properties['user.home']}/Distribution/Groovy/SDK/groovy-4.0.9/lib") {
         include '*.jar'
@@ -60,6 +70,9 @@ dependencies {
             'javax.servlet.jsp:javax.servlet.jsp-api:2.3.3'
     runtimeOnly 'javax.servlet:jstl:1.1.2',
             'taglibs:standard:1.1.2'
+
+    cargo group: cargoGroup, name: 'cargo-core-uberjar', version: cargoVersion
+    cargo "$cargoGroup:cargo-ant:$cargoVersion"
 }
 
 test {
@@ -135,6 +148,21 @@ tasks.register('release') {
     dependsOn(backupReleaseDistribution)
 
     logger.quiet 'Releasing the project...'
+}
+
+tasks.register('deployToLocalTomcat') {
+    doLast {
+        def cargoDeps = configurations.getByName('cargo').asFileTree
+        ant.taskdef(resource: 'cargo.tasks', classpath: cargoDeps.asPath)
+
+        ant.cargo(containerId: 'tomcat8x', action: 'run', output: "$buildDir/output.log") {
+            configuration {
+                deployable(type: 'war', file: "$buildDir/libs/gia-todo-0.1-SNAPSHOT.war")
+            }
+
+            zipUrlInstaller(installUrl: 'https://archive.apache.org/dist/tomcat/tomcat-8/v8.5.87/bin/apache-tomcat-8.5.87.zip')
+        }
+    }
 }
 
 tasks.addRule("Pattern: increment<Classifier>Version – Increments the project version classifier.") { String taskName ->
