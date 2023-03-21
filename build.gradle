@@ -57,7 +57,7 @@ ProjectVersion readVersion() {
 }
 
 ext.cargoGroup = 'org.codehaus.cargo'
-ext.cargoVersion = '1.9.13'
+ext.cargoVersion = '1.9.13'  // '1.9.+'
 
 dependencies {
     implementation fileTree("${System.properties['user.home']}/Distribution/Groovy/SDK/groovy-4.0.9/lib") {
@@ -71,8 +71,15 @@ dependencies {
     runtimeOnly 'javax.servlet:jstl:1.1.2',
             'taglibs:standard:1.1.2'
 
-    cargo group: cargoGroup, name: 'cargo-core-uberjar', version: cargoVersion
-    cargo "$cargoGroup:cargo-ant:$cargoVersion"
+    cargo(group: cargoGroup, name: 'cargo-core-uberjar', version: cargoVersion)
+    cargo("$cargoGroup:cargo-ant:$cargoVersion") {
+        transitive = false
+    }
+    cargo("$cargoGroup:cargo-daemon-client:$cargoVersion") {
+        exclude group: cargoGroup, module: 'cargo-core-api-generic'
+        exclude group: cargoGroup, module: 'cargo-core-api-util'
+    }
+//    cargo fileTree(dir: 'libs/cargo', include: '*.jar')
 }
 
 test {
@@ -163,6 +170,11 @@ tasks.register('deployToLocalTomcat') {
             zipUrlInstaller(installUrl: 'https://archive.apache.org/dist/tomcat/tomcat-8/v8.5.87/bin/apache-tomcat-8.5.87.zip')
         }
     }
+}
+
+tasks.register('copyDependenciesToLocalDir', Copy) {
+    from configurations.cargo.asFileTree
+    into 'libs/cargo'
 }
 
 tasks.addRule("Pattern: increment<Classifier>Version – Increments the project version classifier.") { String taskName ->
