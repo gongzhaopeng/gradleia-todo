@@ -21,20 +21,35 @@ apply plugin: "org.gretty"
 group 'com.atzu68.learning.gia'
 version '0.1'
 
+ext.cargoGroup = 'org.codehaus.cargo'
+ext.cargoVersion = '1.9.13'  // '1.9.+'
+
 configurations {
     cargo {
         description = 'Classpath for Cargo Ant tasks.'
         visible = false
+        resolutionStrategy { ResolutionStrategy s ->
+//            failOnVersionConflict()
+            force "$cargoGroup:cargo-ant:$cargoVersion"
+            cacheDynamicVersionsFor 0, 'seconds'
+            cacheChangingModulesFor 0, 'seconds'
+        }
     }
 }
 
 repositories {
     mavenLocal()
+    mavenCentral()
     maven {
         name 'Alibaba'
         url 'https://maven.aliyun.com/repository/public'
     }
-    mavenCentral()
+    repositories {
+        flatDir {
+            name 'Local libs directory'
+            dir 'libs/cargo'
+        }
+    }
 }
 
 targetCompatibility = 1.8
@@ -61,9 +76,6 @@ ProjectVersion readVersion() {
             versionProps.minor.toInteger(), versionProps.release.toBoolean())
 }
 
-ext.cargoGroup = 'org.codehaus.cargo'
-ext.cargoVersion = '1.9.13'  // '1.9.+'
-
 dependencies {
     implementation fileTree("${System.properties['user.home']}/Distribution/Groovy/SDK/groovy-4.0.9/lib") {
         include '*.jar'
@@ -85,6 +97,9 @@ dependencies {
         exclude group: cargoGroup, module: 'cargo-core-api-util'
     }
 //    cargo fileTree(dir: 'libs/cargo', include: '*.jar')
+
+//    cargo name: 'cargo-ant', version: $cargoVersion
+//    cargo ":cargo-core-uberjar:$cargoVersion", ":cargo-ant:$cargoVersion"
 }
 
 test {
@@ -180,6 +195,12 @@ tasks.register('deployToLocalTomcat') {
 tasks.register('copyDependenciesToLocalDir', Copy) {
     from configurations.cargo.asFileTree
     into 'libs/cargo'
+}
+
+tasks.register('printDependencies') {
+    doLast {
+        configurations.getByName('cargo').each { println it.canonicalPath }
+    }
 }
 
 tasks.addRule("Pattern: increment<Classifier>Version – Increments the project version classifier.") { String taskName ->
