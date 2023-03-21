@@ -1,6 +1,0 @@
-dependencies {
-    implementation fileTree('/Users/champion/Distributions/Groovy/SDK/groovy-4.0.9/lib') {
-        include '*.jar'
-        include '*/*.jar'
-    }
-}
