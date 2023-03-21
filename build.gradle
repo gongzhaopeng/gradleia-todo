@@ -18,13 +18,12 @@ project(':gia-todo-model') {
 
     apply plugin: 'groovy'
 
-    dependencies {
-        println 'Done...'
-        implementation fileTree("${System.properties['user.home']}/Distribution/Groovy/SDK/groovy-4.0.9/lib") {
-            include '*.jar'
-            include '*/*.jar'
-        }
-    }
+//    dependencies {
+//        implementation fileTree("${System.properties['user.home']}/Distribution/Groovy/SDK/groovy-4.0.9/lib") {
+//            include '*.jar'
+//            include '*/*.jar'
+//        }
+//    }
 }
 
 project(':gia-todo-repository') {
