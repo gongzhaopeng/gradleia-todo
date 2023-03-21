@@ -1,0 +1,237 @@
+import com.atzu68.learning.gia.ProjectVersion
+import com.atzu68.learning.gia.ReleaseVersionTask
+import com.atzu68.learning.gia.ReleaseVersionListener
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.gretty:gretty:3.0.5")
+    }
+}
+
+plugins {
+    id 'groovy'
+    id 'war'
+}
+
+apply plugin: "org.gretty"
+
+group 'com.atzu68.learning.gia'
+version '0.1'
+
+ext.cargoGroup = 'org.codehaus.cargo'
+ext.cargoVersion = '1.9.13'  // '1.9.+'
+
+configurations {
+    cargo {
+        description = 'Classpath for Cargo Ant tasks.'
+        visible = false
+        resolutionStrategy { ResolutionStrategy s ->
+//            failOnVersionConflict()
+            force "$cargoGroup:cargo-ant:$cargoVersion"
+            cacheDynamicVersionsFor 0, 'seconds'
+            cacheChangingModulesFor 0, 'seconds'
+        }
+    }
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        name 'Alibaba'
+        url 'https://maven.aliyun.com/repository/public'
+    }
+    repositories {
+        flatDir {
+            name 'Local libs directory'
+            dir 'libs/cargo'
+        }
+    }
+}
+
+targetCompatibility = 1.8
+
+ext.versionFile = file('version.properties')
+
+task loadVersion {
+    version = readVersion()
+}
+
+ProjectVersion readVersion() {
+    logger.quiet 'Reading the version file.'
+
+    if (!versionFile.exists()) {
+        throw new GradleException("Required version file does not exist: $versionFile.canonicalPath")
+    }
+
+    def versionProps = new Properties()
+
+    versionFile.withInputStream { stream -> versionProps.load(stream)
+    }
+
+    new ProjectVersion(versionProps.major.toInteger(),
+            versionProps.minor.toInteger(), versionProps.release.toBoolean())
+}
+
+dependencies {
+    implementation fileTree("${System.properties['user.home']}/Distribution/Groovy/SDK/groovy-4.0.9/lib") {
+        include '*.jar'
+        include '*/*.jar'
+    }
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+
+    providedCompile 'javax.servlet:javax.servlet-api:4.0.1',
+            'javax.servlet.jsp:javax.servlet.jsp-api:2.3.3'
+    runtimeOnly 'javax.servlet:jstl:1.1.2',
+            'taglibs:standard:1.1.2'
+
+    cargo(group: cargoGroup, name: 'cargo-core-uberjar', version: cargoVersion)
+    cargo("$cargoGroup:cargo-ant:$cargoVersion") {
+        transitive = false
+    }
+    cargo("$cargoGroup:cargo-daemon-client:$cargoVersion") {
+        exclude group: cargoGroup, module: 'cargo-core-api-generic'
+        exclude group: cargoGroup, module: 'cargo-core-api-util'
+    }
+//    cargo fileTree(dir: 'libs/cargo', include: '*.jar')
+
+//    cargo name: 'cargo-ant', version: $cargoVersion
+//    cargo ":cargo-core-uberjar:$cargoVersion", ":cargo-ant:$cargoVersion"
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.named('wrapper') {
+    gradleVersion = '7.5.1'
+}
+
+sourceSets {
+    main {
+        groovy {
+            ['src/main/groovy']
+        }
+    }
+    test {
+        groovy {
+            ['src/test/groovy']
+        }
+    }
+}
+
+buildDir = 'build'
+
+webAppDirName = 'src/main/webapp'
+
+war {
+    from 'src/main/webapp'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.atzu68.learning.gia.todo.ToDoApp'
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+gretty {
+    httpPort = 8081
+    contextPath = '/todo'
+}
+
+//tasks.register('makeReleaseVersion', ReleaseVersionTask) {
+//
+//    release = version.release
+//    destFile = versionFile
+//}
+
+tasks.register('createDistribution', Zip) {
+//    dependsOn(makeReleaseVersion)
+
+    from war.outputs.files
+
+    from(sourceSets*.allSource) {
+        into 'src'
+    }
+
+    from(rootDir) {
+        include versionFile.name
+    }
+}
+
+tasks.register('backupReleaseDistribution', Copy) {
+    from createDistribution.outputs.files
+    into "$buildDir/backup"
+}
+
+tasks.register('release') {
+    dependsOn(backupReleaseDistribution)
+
+    logger.quiet 'Releasing the project...'
+}
+
+tasks.register('deployToLocalTomcat') {
+    doLast {
+        def cargoDeps = configurations.getByName('cargo').asFileTree
+        ant.taskdef(resource: 'cargo.tasks', classpath: cargoDeps.asPath)
+
+        ant.cargo(containerId: 'tomcat8x', action: 'run', output: "$buildDir/output.log") {
+            configuration {
+                deployable(type: 'war', file: "$buildDir/libs/gia-todo-0.1-SNAPSHOT.war")
+            }
+
+            zipUrlInstaller(installUrl: 'https://archive.apache.org/dist/tomcat/tomcat-8/v8.5.87/bin/apache-tomcat-8.5.87.zip')
+        }
+    }
+}
+
+tasks.register('copyDependenciesToLocalDir', Copy) {
+    from configurations.cargo.asFileTree
+    into 'libs/cargo'
+}
+
+tasks.register('printDependencies') {
+    doLast {
+        configurations.getByName('cargo').each { println it.canonicalPath }
+    }
+}
+
+tasks.addRule("Pattern: increment<Classifier>Version – Increments the project version classifier.") { String taskName ->
+    if (taskName.startsWith('increment') && taskName.endsWith('Version')) {
+        tasks.register(taskName) {
+            String classifier = (taskName - 'increment' - 'Version').toLowerCase()
+            String currentVersion = version
+            switch (classifier) {
+                case 'major': version.major++
+                    break
+                case 'minor': version.minor++
+                    break
+                default: throw new GradleException("Invalid version type '$classifier. Allowed types: ['Major', 'Minor']")
+            }
+            logger.info "Incrementing $classifier project version: $currentVersion -> $version"
+            ant.propertyfile(file: versionFile) {
+                entry(key: classifier, type: 'int', operation: '+', value: 1)
+            }
+        }
+    }
+}
+
+//gradle.taskGraph.whenReady { TaskExecutionGraph taskGraph ->
+//    if (taskGraph.hasTask(release)) {
+//        if (!version.release) {
+//            version.release = true
+//            ant.propertyfile(file: versionFile) {
+//                entry(key: 'release', type: 'string', operation: '=', value: 'true')
+//            }
+//        }
+//    }
+//}
+
+gradle.taskGraph.addTaskExecutionGraphListener(new ReleaseVersionListener())

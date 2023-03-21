@@ -1,2 +1,5 @@
 rootProject.name = 'gia-todo'
-
+include 'gia-todo-model'
+include 'gia-todo-repository'
+include 'gia-todo-cmd'
+include 'gia-todo-web'
