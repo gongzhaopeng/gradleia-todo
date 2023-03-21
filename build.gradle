@@ -29,6 +29,11 @@ configurations {
 }
 
 repositories {
+    mavenLocal()
+    maven {
+        name 'Alibaba'
+        url 'https://maven.aliyun.com/repository/public'
+    }
     mavenCentral()
 }
 
