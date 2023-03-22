@@ -20,10 +20,23 @@ subprojects {
         testImplementation group: 'org.spockframework', name: 'spock-core', version: '2.3-groovy-4.0'
     }
 
-    test {
-        useJUnitPlatform()
-//        useTestNG()
+    def testNG = tasks.register('testNG', Test) {
+        useTestNG()
     }
+
+    test {
+        dependsOn('testNG')
+        useJUnitPlatform()
+    }
+
+    tasks.register('aggregateTestReports', TestReport) {
+        destinationDirectory = test.reports.html.outputLocation
+
+//        reportOn test, testNG.get()
+        testResults.from(test.binaryResultsDirectory, testNG.get().binaryResultsDirectory)
+    }
+
+    check.dependsOn 'aggregateTestReports'
 }
 
 tasks.named('wrapper') {
