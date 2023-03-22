@@ -3,3 +3,7 @@ include 'gia-todo-model'
 include 'gia-todo-repository'
 include 'gia-todo-cmd'
 include 'gia-todo-web'
+
+rootProject.children.each {
+    it.buildFileName = it.name + '.gradle' - 'gia-todo-'
+}
