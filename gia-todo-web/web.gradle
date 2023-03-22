@@ -10,10 +10,6 @@ buildscript {
 apply plugin: 'war'
 apply plugin: "org.gretty"
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     implementation project(':gia-todo-model')
     implementation project(':gia-todo-repository')

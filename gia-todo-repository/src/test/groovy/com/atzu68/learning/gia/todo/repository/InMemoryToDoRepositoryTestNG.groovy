@@ -1,15 +1,14 @@
 package com.atzu68.learning.gia.todo.repository
 
 import com.atzu68.learning.gia.todo.model.ToDoItem
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import org.testng.annotations.*
 
-import static org.junit.jupiter.api.Assertions.*
+import static org.testng.Assert.*
 
-class InMemoryToDoRepositoryTest {
+class InMemoryToDoRepositoryTestNG {
     private ToDoRepository inMemoryToDoRepository
 
-    @BeforeEach
+    @BeforeTest
     void setUp() {
         inMemoryToDoRepository = new InMemoryToDoRepository()
     }

@@ -6,15 +6,23 @@ allprojects {
 subprojects {
     apply plugin: 'groovy'
 
+    repositories {
+        mavenCentral()
+    }
+
     dependencies {
         implementation fileTree("${System.properties['user.home']}/Distribution/Groovy/SDK/groovy-4.0.9/lib") {
             include '*.jar'
             include '*/*.jar'
         }
+
+        testImplementation group: 'org.testng', name: 'testng', version: '7.5'
+        testImplementation group: 'org.spockframework', name: 'spock-core', version: '2.3-groovy-4.0'
     }
 
     test {
         useJUnitPlatform()
+//        useTestNG()
     }
 }
 
