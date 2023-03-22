@@ -16,12 +16,18 @@ class InMemoryToDoRepositoryTest {
 
     @Test
     void insertToDoItem() {
-        ToDoItem newToDoItem = [name: 'Write unit tests']
-        def newId = inMemoryToDoRepository.insert(newToDoItem)
-        assertNotNull(newId)
+        def items = System.getProperty('items')?.toInteger() ?: 1
+        createAndInsertToDoItems(items)
+        def toDoItems = inMemoryToDoRepository.findAll()
+        assertEquals(items, toDoItems.size())
+    }
 
-        def persistedToDoItem = inMemoryToDoRepository.findById(newId)
-        assertNotNull(persistedToDoItem)
-        assertEquals(newToDoItem, persistedToDoItem)
+    private void createAndInsertToDoItems(int items) {
+        println "Creating $items To Do items."
+
+        (1..items).each {
+            ToDoItem toDoItem = [name: "To Do task $it"]
+            inMemoryToDoRepository.insert(toDoItem)
+        }
     }
 }

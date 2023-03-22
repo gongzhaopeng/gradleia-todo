@@ -1,3 +1,5 @@
+import static org.gradle.api.tasks.testing.logging.TestLogEvent.*
+
 allprojects {
     group = 'com.atzu68.learning.gia'
     version = '0.1'
@@ -27,6 +29,20 @@ subprojects {
     test {
         dependsOn('testNG')
         useJUnitPlatform()
+
+        systemProperty 'items', '20'
+        minHeapSize = '128m'
+        maxHeapSize = '256m'
+        jvmArgs '-XX:MaxPermSize=128m'
+
+        testLogging {
+            showStandardStreams = true
+            exceptionFormat 'full'
+            events STARTED, PASSED, SKIPPED, FAILED
+        }
+
+        forkEvery = 5
+        maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2)
     }
 
     tasks.register('aggregateTestReports', TestReport) {
