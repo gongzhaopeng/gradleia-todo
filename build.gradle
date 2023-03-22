@@ -24,6 +24,13 @@ project(':gia-todo-model') {
             include '*/*.jar'
         }
     }
+
+    tasks.register('hello') {
+        dependsOn(':gia-todo-repository:hello')
+        doLast {
+            println 'Hello from model project'
+        }
+    }
 }
 
 project(':gia-todo-repository') {
@@ -39,6 +46,12 @@ project(':gia-todo-repository') {
         }
 
         implementation project(':gia-todo-model')
+    }
+
+    tasks.register('hello') {
+        doLast {
+            println 'Hello from repository project'
+        }
     }
 }
 
@@ -110,4 +123,10 @@ project(':gia-todo-web') {
 
 tasks.named('wrapper') {
     gradleVersion = '7.5.1'
+}
+
+tasks.register('hello') {
+    doLast {
+        println 'Hello from root project'
+    }
 }
