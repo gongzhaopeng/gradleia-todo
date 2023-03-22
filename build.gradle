@@ -1,21 +1,9 @@
-ext.projectIds = ['group': 'com.atzu68.learning.gia', 'version': '0.1']
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath("org.gretty:gretty:3.0.5")
-    }
+allprojects {
+    group = 'com.atzu68.learning.gia'
+    version = '0.1'
 }
 
-group = projectIds.group
-version = projectIds.version
-
-project(':gia-todo-model') {
-    group = projectIds.group
-    version = projectIds.version
-
+subprojects {
     apply plugin: 'groovy'
 
     dependencies {
@@ -23,101 +11,6 @@ project(':gia-todo-model') {
             include '*.jar'
             include '*/*.jar'
         }
-    }
-
-    tasks.register('hello') {
-        dependsOn(':gia-todo-repository:hello')
-        doLast {
-            println 'Hello from model project'
-        }
-    }
-}
-
-project(':gia-todo-repository') {
-    group = projectIds.group
-    version = projectIds.version
-
-    apply plugin: 'groovy'
-
-    dependencies {
-        implementation fileTree("${System.properties['user.home']}/Distribution/Groovy/SDK/groovy-4.0.9/lib") {
-            include '*.jar'
-            include '*/*.jar'
-        }
-
-        implementation project(':gia-todo-model')
-    }
-
-    tasks.register('hello') {
-        doLast {
-            println 'Hello from repository project'
-        }
-    }
-}
-
-project(':gia-todo-cmd') {
-    group = projectIds.group
-    version = projectIds.version
-
-    apply plugin: 'groovy'
-
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        implementation fileTree("${System.properties['user.home']}/Distribution/Groovy/SDK/groovy-4.0.9/lib") {
-            include '*.jar'
-            include '*/*.jar'
-        }
-
-        implementation project(':gia-todo-model')
-        implementation project(':gia-todo-repository')
-
-        implementation 'org.apache.commons:commons-lang3:3.12.0'
-    }
-
-    jar {
-        manifest {
-            attributes 'Main-Class': 'com.atzu68.learning.gia.todo.ToDoApp'
-        }
-        from {
-            configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-        }
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    }
-}
-
-project(':gia-todo-web') {
-    group = projectIds.group
-    version = projectIds.version
-
-    apply plugin: 'groovy'
-    apply plugin: 'war'
-    apply plugin: "org.gretty"
-
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        implementation fileTree("${System.properties['user.home']}/Distribution/Groovy/SDK/groovy-4.0.9/lib") {
-            include '*.jar'
-            include '*/*.jar'
-        }
-
-        implementation project(':gia-todo-model')
-        implementation project(':gia-todo-repository')
-
-        providedCompile 'javax.servlet:javax.servlet-api:4.0.1',
-                'javax.servlet.jsp:javax.servlet.jsp-api:2.3.3'
-        runtimeOnly 'javax.servlet:jstl:1.1.2',
-                'taglibs:standard:1.1.2'
-    }
-
-    gretty {
-        httpPort = 8081
-        contextPath = '/todo'
     }
 }
 

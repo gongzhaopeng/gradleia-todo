@@ -1,0 +1,6 @@
+tasks.register('hello') {
+    dependsOn(':gia-todo-repository:hello')
+    doLast {
+        println 'Hello from model project'
+    }
+}

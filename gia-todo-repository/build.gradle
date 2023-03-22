@@ -1,0 +1,9 @@
+dependencies {
+    implementation project(':gia-todo-model')
+}
+
+tasks.register('hello') {
+    doLast {
+        println 'Hello from repository project'
+    }
+}
