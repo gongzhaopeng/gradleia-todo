@@ -12,10 +12,6 @@ buildscript {
 group = projectIds.group
 version = projectIds.version
 
-//repositories {
-//    mavenCentral()
-//}
-
 project(':gia-todo-model') {
     group = projectIds.group
     version = projectIds.version
