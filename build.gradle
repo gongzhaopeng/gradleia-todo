@@ -12,6 +12,10 @@ subprojects {
             include '*/*.jar'
         }
     }
+
+    test {
+        useJUnitPlatform()
+    }
 }
 
 tasks.named('wrapper') {
