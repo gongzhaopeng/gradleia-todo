@@ -21,7 +21,6 @@ test {
     dependsOn('testNG')
     useJUnitPlatform()
 
-    exclude '**/*IntegTest.class'
     reports.html.outputLocation.set(file("${reports.html.outputLocation.get()}/unit"))
     reports.junitXml.outputLocation.set(file("${reports.junitXml.outputLocation.get()}/unit"))
 
@@ -42,13 +41,24 @@ test {
     addTestListener(new NotificationTestListener(project))
 }
 
+sourceSets {
+    integrationTest {
+        groovy.srcDir file('src/integTest/groovy')
+        resources.srcDir file('src/integTest/resources')
+        compileClasspath = sourceSets.main.output + configurations.testCompileClasspath
+        runtimeClasspath = sourceSets.main.output + output + configurations.testRuntimeClasspath
+    }
+}
+
 tasks.register('integrationTest', Test) {
     description = 'Runs the integration tests.'
     group = 'verification'
 
     useJUnitPlatform()
 
-    include '**/*IntegTest.class'
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+
     reports.html.outputLocation.set(file("${reports.html.outputLocation.get()}/integration"))
     reports.junitXml.outputLocation.set(file("${reports.junitXml.outputLocation.get()}/integration"))
 
