@@ -1,6 +1,43 @@
+import static org.gradle.api.tasks.testing.logging.TestLogEvent.*
+
 dependencies {
     implementation project(':gia-todo-model')
+
+    testImplementation group: 'org.testng', name: 'testng', version: '7.5'
+    testImplementation group: 'org.spockframework', name: 'spock-core', version: '2.3-groovy-4.0'
 }
+
+def testNG = tasks.register('testNG', Test) {
+    useTestNG()
+}
+
+test {
+    dependsOn('testNG')
+    useJUnitPlatform()
+
+    systemProperty 'items', '20'
+    minHeapSize = '128m'
+    maxHeapSize = '256m'
+    jvmArgs '-XX:MaxPermSize=128m'
+
+    testLogging {
+        showStandardStreams = true
+        exceptionFormat 'full'
+        events STARTED, PASSED, SKIPPED, FAILED
+    }
+
+    forkEvery = 5
+    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2)
+}
+
+tasks.register('aggregateTestReports', TestReport) {
+    destinationDirectory = test.reports.html.outputLocation
+
+//        reportOn test, testNG.get()
+    testResults.from(test.binaryResultsDirectory, testNG.get().binaryResultsDirectory)
+}
+
+check.dependsOn 'aggregateTestReports'
 
 tasks.register('hello') {
     doLast {
