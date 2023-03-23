@@ -31,12 +31,12 @@ class InMemoryToDoRepository implements ToDoRepository {
     }
 
     @Override
-    void update(ToDoItem toDoItem) {
+    def update(ToDoItem toDoItem) {
         toDos.replace(toDoItem.id, toDoItem)
     }
 
     @Override
-    void delete(ToDoItem toDoItem) {
+    def delete(ToDoItem toDoItem) {
         toDos.remove(toDoItem.id)
     }
 }

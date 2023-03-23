@@ -9,7 +9,7 @@ interface ToDoRepository {
 
     Long insert(ToDoItem toDoItem)
 
-    void update(ToDoItem toDoItem)
+    def update(ToDoItem toDoItem)
 
-    void delete(ToDoItem toDoItem)
+    def delete(ToDoItem toDoItem)
 }

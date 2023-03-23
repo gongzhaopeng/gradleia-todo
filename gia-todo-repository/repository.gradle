@@ -2,8 +2,12 @@ import com.atzu68.learning.gia.NotificationTestListener
 
 import static org.gradle.api.tasks.testing.logging.TestLogEvent.*
 
+apply from: 'databaseSetup.gradle'
+
 dependencies {
     implementation project(':gia-todo-model')
+
+    runtimeOnly 'com.h2database:h2:2.1.214'
 
     testImplementation group: 'org.testng', name: 'testng', version: '7.5'
     testImplementation group: 'org.spockframework', name: 'spock-core', version: '2.3-groovy-4.0'
@@ -17,16 +21,14 @@ test {
     dependsOn('testNG')
     useJUnitPlatform()
 
+    exclude '**/*IntegTest.class'
+    reports.html.outputLocation.set(file("${reports.html.outputLocation.get()}/unit"))
+    reports.junitXml.outputLocation.set(file("${reports.junitXml.outputLocation.get()}/unit"))
+
     systemProperty 'items', '20'
     minHeapSize = '128m'
     maxHeapSize = '256m'
     jvmArgs '-XX:MaxPermSize=128m'
-
-    testLogging {
-        showStandardStreams = true
-        exceptionFormat 'full'
-        events STARTED, PASSED, SKIPPED, FAILED
-    }
 
     forkEvery = 5
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2)
@@ -40,6 +42,28 @@ test {
     addTestListener(new NotificationTestListener(project))
 }
 
+tasks.register('integrationTest', Test) {
+    description = 'Runs the integration tests.'
+    group = 'verification'
+
+    useJUnitPlatform()
+
+    include '**/*IntegTest.class'
+    reports.html.outputLocation.set(file("${reports.html.outputLocation.get()}/integration"))
+    reports.junitXml.outputLocation.set(file("${reports.junitXml.outputLocation.get()}/integration"))
+
+    dependsOn 'startAndPrepareDatabase'
+    finalizedBy 'stopDatabase'
+}
+
+tasks.withType(Test).configureEach {
+    testLogging {
+        showStandardStreams = true
+        exceptionFormat 'full'
+        events STARTED, PASSED, SKIPPED, FAILED
+    }
+}
+
 tasks.register('aggregateTestReports', TestReport) {
     destinationDirectory = test.reports.html.outputLocation
 
@@ -48,6 +72,7 @@ tasks.register('aggregateTestReports', TestReport) {
 }
 
 check.dependsOn 'aggregateTestReports'
+check.dependsOn 'integrationTest'
 
 tasks.register('hello') {
     doLast {
