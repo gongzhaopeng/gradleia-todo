@@ -1,3 +1,6 @@
+import org.akhikhl.gretty.AppStartTask
+import org.akhikhl.gretty.AppStopTask
+
 buildscript {
     repositories {
         mavenCentral()
@@ -11,8 +14,8 @@ apply plugin: 'war'
 apply plugin: "org.gretty"
 
 configurations {
-    functTestCompile.extendsFrom testCompile
-    functTestRuntime.extendsFrom testRuntime
+    functTestCompile.extendsFrom testCompileClasspath
+    functTestRuntime.extendsFrom testCompileClasspath
 }
 
 ext.seleniumGroup = 'org.seleniumhq.selenium'
@@ -27,14 +30,21 @@ dependencies {
     runtimeOnly 'javax.servlet:jstl:1.1.2',
             'taglibs:standard:1.1.2'
 
-    functTestCompile 'org.gebish:geb-core:7.0'
+//    functTestCompile('org.gebish:geb-core:7.0') {
+//        exclude group: 'org.apache.groovy'
+//    }
+    functTestCompile('org.gebish:geb-spock:7.0') {
+        exclude group: 'org.apache.groovy'
+    }
     functTestCompile "$seleniumGroup:selenium-support:$seleniumVersion"
     functTestRuntime "$seleniumGroup:selenium-chrome-driver:$seleniumVersion"
+    functTestRuntime "$seleniumGroup:selenium-firefox-driver:$seleniumVersion"
 }
 
 gretty {
     httpPort = 8080
     contextPath = '/todo'
+    integrationTestTask = 'functionalTest'
 }
 
 sourceSets {
@@ -45,3 +55,24 @@ sourceSets {
         runtimeClasspath = output + compileClasspath + configurations.functTestRuntime
     }
 }
+
+tasks.register('functionalGrettyStart', AppStartTask) {
+    interactive = false
+}
+
+tasks.register('functionalGrettyStop', AppStopTask)
+
+tasks.register('functionalTest', Test) {
+    useJUnitPlatform()
+
+    testClassesDirs = sourceSets.functionalTest.output.classesDirs
+    classpath = sourceSets.functionalTest.runtimeClasspath
+
+    reports.html.outputLocation.set(file("${reports.html.outputLocation.get()}/functional"))
+    reports.junitXml.outputLocation.set(file("${reports.junitXml.outputLocation.get()}/functional"))
+
+    systemProperty 'geb.env', 'chrome'
+    systemProperty 'geb.build.reportsDir', reporting.file("$name/geb")
+}
+
+check.dependsOn 'functionalTest'
