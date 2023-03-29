@@ -1,0 +1,14 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.cloudbees:cloudbees-api-client:1.4.0'
+    }
+}
+
+import com.cloudbees.api.ApplicationInfo
+import com.cloudbees.api.BeesClient
+
+def client = new BeesClient('https://api.cloudbees.com/api', '', '', 'xml', '1.0')
