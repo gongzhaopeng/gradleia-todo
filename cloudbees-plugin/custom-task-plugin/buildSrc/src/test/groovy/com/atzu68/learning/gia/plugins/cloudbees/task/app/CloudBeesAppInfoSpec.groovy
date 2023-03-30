@@ -41,4 +41,48 @@ class CloudBeesAppInfoSpec extends Specification {
         task.apiKey == 'myKey'
         task.secret == 'mySecret'
     }
+
+    def "Executes app info task with correct credentials"() {
+        expect:
+        def gradleProperties = getGradleProperties()
+        gradleProperties['cloudbeesApiKey'] == null
+        gradleProperties['cloudbeesApiSecret'] == null
+
+        when:
+        def task = project.tasks.register(TASK_NAME, CloudBeesAppInfo) {
+            appId = 'gradle-in-action/todo'
+            apiKey = gradleProperties['cloudbeesApiKey']
+            secret = gradleProperties['cloudbeesApiSecret']
+        }.get()
+
+        task.start()
+
+        then:
+        project.tasks.named(TASK_NAME).get() != null
+    }
+
+    private Properties getGradleProperties() {
+        def props = new Properties()
+        def gradlePropertiesFile = new File(System.getProperty('user.home'), '.gradle/gradle.properties')
+
+        if (gradlePropertiesFile.exists()) {
+            gradlePropertiesFile.withInputStream { props.load(it) }
+        }
+
+        addPropertyFromEnvVariable(props, 'cloudbeesApiKey')
+        addPropertyFromEnvVariable(props, 'cloudbeesApiSecret')
+
+        return props
+    }
+
+    private void addPropertyFromEnvVariable(Properties props, String key) {
+        if (!props.containsKey(key)) {
+            def env = System.getenv()
+            String gradleEnvPropKey = "ORG_GRADLE_PROJECT_$key"
+
+            if (env.containsKey(gradleEnvPropKey)) {
+                props[key] = env[gradleEnvPropKey]
+            }
+        }
+    }
 }
