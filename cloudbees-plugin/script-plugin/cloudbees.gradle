@@ -1,3 +1,6 @@
+import com.cloudbees.api.ApplicationInfo
+import com.cloudbees.api.BeesClient
+
 buildscript {
     repositories {
         mavenCentral()
@@ -8,7 +11,44 @@ buildscript {
     }
 }
 
-import com.cloudbees.api.ApplicationInfo
-import com.cloudbees.api.BeesClient
+ext {
+    apiUrl = 'https://api.cloudbees.com/api'
+    apiFormat = 'xml'
+    apiVersion = '1.0'
+}
 
-def client = new BeesClient('https://api.cloudbees.com/api', '', '', 'xml', '1.0')
+if (project.hasProperty('cloudbeesApiKey')) {
+    ext.apiKey = project.property('cloudbeesApiKey')
+}
+
+if (project.hasProperty('cloudbeesApiSecret')) {
+    ext.secret = project.property('cloudbeesApiSecret')
+}
+
+tasks.register('cloudBeesAppInfo') {
+    description = 'Returns the basic information about an application.'
+    group = 'CloudBees'
+
+    inputs.property('apiKey', apiKey)
+    inputs.property('secret', secret)
+    inputs.property('appId', appId)
+
+    doLast {
+        BeesClient client = new BeesClient(apiUrl, apiKey, secret, apiFormat, apiVersion)
+
+        ApplicationInfo info
+
+        try {
+            info = client.applicationInfo(appId)
+        } catch (Exception e) {
+            logger.quiet 'Mocking acquiring CloudBees application information...'
+            logger.quiet "Thrown exception message: ${e.message}"
+        }
+
+        logger.quiet "Application id : --Mocked-Application-ID--"
+        logger.quiet "         title : --Mocked-Application-Title--"
+        logger.quiet "       created : --Mocked-Application-Created--"
+        logger.quiet "          urls : --Mocked-Application-URLs--"
+        logger.quiet "        status : --Mocked-Application-Status--"
+    }
+}
