@@ -1,23 +1,11 @@
 package com.atzu68.learning.gia.plugins.cloudbees.tasks.app
 
-import com.cloudbees.api.ApplicationDeployArchiveResponse
+import com.atzu68.learning.gia.plugins.cloudbees.tasks.CloudBeesTask
 import com.cloudbees.api.BeesClient
-import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.TaskAction
 
-class CloudBeesAppDeployWar extends DefaultTask {
-    @Input
-    String apiUrl
-    @Input
-    String apiKey
-    @Input
-    String secret
-    @Input
-    String apiFormat
-    @Input
-    String apiVersion
+class CloudBeesAppDeployWar extends CloudBeesTask {
     @Input
     String appId
     @Input
@@ -26,25 +14,17 @@ class CloudBeesAppDeployWar extends DefaultTask {
     File warFile
 
     CloudBeesAppDeployWar() {
-        description = 'Deploys a new version of an application using a WAR file.'
-        group = 'CloudBees'
+        super('Deploys a new version of an application using a WAR file.')
     }
 
-    @TaskAction
-    void start() {
+    @Override
+    void executeAction(BeesClient client) {
         logger.quiet "Deploying WAR '${warFile.canonicalPath}' to application ID '$appId' with message '$message'"
+        def response = client.applicationDeployWar(appId, null, message, warFile, null, null)
+    }
 
-        BeesClient client = new BeesClient(apiUrl, apiKey, secret, apiFormat, apiVersion)
-
-        ApplicationDeployArchiveResponse response
-
-        try {
-            response = client.applicationDeployWar(appId, null, message, warFile, null, null)
-        } catch (Exception e) {
-            logger.quiet 'Mocking deploying war file to CloudBees platform...'
-            logger.quiet "Thrown exception message: ${e.message}"
-        }
-
+    @Override
+    void onException() {
         logger.quiet "Application uploaded successfully to: '--Mocked-Application-URL--'"
     }
 }

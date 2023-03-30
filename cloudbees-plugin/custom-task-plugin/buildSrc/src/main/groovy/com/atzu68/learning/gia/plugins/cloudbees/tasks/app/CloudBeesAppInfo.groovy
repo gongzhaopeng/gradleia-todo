@@ -1,42 +1,24 @@
 package com.atzu68.learning.gia.plugins.cloudbees.tasks.app
 
-import com.cloudbees.api.ApplicationInfo
+import com.atzu68.learning.gia.plugins.cloudbees.tasks.CloudBeesTask
 import com.cloudbees.api.BeesClient
-import org.gradle.api.*
-import org.gradle.api.tasks.*
+import org.gradle.api.tasks.Input
 
-class CloudBeesAppInfo extends DefaultTask {
-    @Input
-    String apiUrl
-    @Input
-    String apiKey
-    @Input
-    String secret
-    @Input
-    String apiFormat
-    @Input
-    String apiVersion
+class CloudBeesAppInfo extends CloudBeesTask {
     @Input
     String appId
 
     CloudBeesAppInfo() {
-        description = 'Returns the basic information about an application.'
-        group = 'CloudBees'
+        super('Returns the basic information about an application.')
     }
 
-    @TaskAction
-    void start() {
-        def client = new BeesClient(apiUrl, apiKey, secret, apiFormat, apiVersion)
+    @Override
+    void executeAction(BeesClient client) {
+        def info = client.applicationInfo(appId)
+    }
 
-        ApplicationInfo info
-
-        try {
-            info = client.applicationInfo(appId)
-        } catch (Exception e) {
-            logger.quiet 'Mocking acquiring CloudBees application information...'
-            logger.quiet "Thrown exception message: ${e.message}"
-        }
-
+    @Override
+    void onException() {
         logger.quiet "Application id : --Mocked-Application-ID--"
         logger.quiet "         title : --Mocked-Application-Title--"
         logger.quiet "       created : --Mocked-Application-Created--"
