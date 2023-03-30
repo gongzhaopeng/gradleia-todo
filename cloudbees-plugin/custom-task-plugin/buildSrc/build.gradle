@@ -4,4 +4,10 @@ repositories {
 
 dependencies {
     implementation 'com.cloudbees:cloudbees-api-client:1.4.0'
+    testImplementation localGroovy()
+    testImplementation group: 'org.spockframework', name: 'spock-core', version: '2.3-groovy-3.0'
+}
+
+test {
+    useJUnitPlatform()
 }
