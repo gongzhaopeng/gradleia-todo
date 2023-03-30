@@ -1,4 +1,5 @@
 import com.cloudbees.api.ApplicationInfo
+import com.cloudbees.api.ApplicationDeployArchiveResponse
 import com.cloudbees.api.BeesClient
 
 buildscript {
@@ -50,5 +51,35 @@ tasks.register('cloudBeesAppInfo') {
         logger.quiet "       created : --Mocked-Application-Created--"
         logger.quiet "          urls : --Mocked-Application-URLs--"
         logger.quiet "        status : --Mocked-Application-Status--"
+    }
+}
+
+tasks.register('cloudBeesDeployWar') {
+    description = 'Deploys a new version of an application using a WAR archive file.'
+    group = 'CloudBees'
+
+    inputs.property('apiKey', apiKey)
+    inputs.property('secret', secret)
+    inputs.property('appId', appId)
+    inputs.file(warFile)
+
+    ext.message = project.hasProperty('message') ? project.property('message') : null
+    inputs.property('message', message)
+
+    doLast {
+        logger.quiet "Deploying WAR '${file(warFile).canonicalPath}' to application ID '$appId' with message '$message'"
+
+        BeesClient client = new BeesClient(apiUrl, apiKey, secret, apiFormat, apiVersion)
+
+        ApplicationDeployArchiveResponse response
+
+        try {
+            response = client.applicationDeployWar(appId, null, message, file(warFile), null, null)
+        } catch (Exception e) {
+            logger.quiet 'Mocking deploying war file to CloudBees platform...'
+            logger.quiet "Thrown exception message: ${e.message}"
+        }
+
+        logger.quiet "Application uploaded successfully to: '--Mocked-Application-URL--'"
     }
 }
