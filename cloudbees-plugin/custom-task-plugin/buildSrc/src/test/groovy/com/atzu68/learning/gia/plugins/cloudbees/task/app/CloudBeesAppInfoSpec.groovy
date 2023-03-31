@@ -58,6 +58,7 @@ class CloudBeesAppInfoSpec extends Specification {
         task.start()
 
         then:
+        thrown NullPointerException
         project.tasks.named(TASK_NAME).get() != null
     }
 

@@ -33,8 +33,8 @@ abstract class CloudBeesTask extends DefaultTask {
     private void withExceptionHandling(Closure c) {
         try {
             c()
-        } catch (Exception e) {
-            logger.quiet "Intented Exception: $e.message"
+        } catch (UnknownHostException e) {
+            logger.quiet "Intented Exception: $e.class.name >>> $e.message"
 
             onException()
         }
