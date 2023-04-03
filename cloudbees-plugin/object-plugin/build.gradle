@@ -8,7 +8,7 @@ if (project.hasProperty('cloudbeesApiSecret')) {
     ext.secret = project.property('cloudbeesApiSecret')
 }
 
-apply plugin: CloudBeesPlugin
+apply plugin: 'cloudbees'
 
 cloudBees {
     apiUrl = 'https://api.cloudbees.com/api'
