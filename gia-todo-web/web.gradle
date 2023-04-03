@@ -3,15 +3,18 @@ import org.akhikhl.gretty.AppStopTask
 
 buildscript {
     repositories {
+        maven { url "file://$projectDir/../repo" }
         mavenCentral()
     }
     dependencies {
         classpath("org.gretty:gretty:3.0.5")
+        classpath("com.atzu68.learning.gia:cloudbees-plugin:1.0")
     }
 }
 
 apply plugin: 'war'
 apply plugin: "org.gretty"
+apply plugin: 'cloudbees'
 
 configurations {
     functTestCompile.extendsFrom testCompileClasspath
@@ -76,3 +79,18 @@ tasks.register('functionalTest', Test) {
 }
 
 check.dependsOn 'functionalTest'
+
+if (project.hasProperty('cloudbeesApiKey')) {
+    ext.apiKey = project.property('cloudbeesApiKey')
+}
+
+if (project.hasProperty('cloudbeesApiSecret')) {
+    ext.secret = project.property('cloudbeesApiSecret')
+}
+
+cloudBees {
+    apiUrl = 'https://api.cloudbees.com/api'
+    apiKey = project.apiKey
+    secret = project.secret
+    appId = 'gradle-in-action/todo'
+}
