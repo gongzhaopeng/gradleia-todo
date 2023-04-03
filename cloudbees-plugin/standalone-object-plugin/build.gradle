@@ -1,0 +1,34 @@
+apply plugin: 'groovy'
+apply plugin: 'maven-publish'
+
+group = 'com.atzu68.learning.gia'
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation localGroovy()
+    implementation gradleApi()
+    implementation 'com.cloudbees:cloudbees-api-client:1.4.0'
+    testImplementation group: 'org.spockframework', name: 'spock-core', version: '2.3-groovy-3.0'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+
+    repositories {
+        maven {
+            url = "file://$projectDir/../../repo"
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
