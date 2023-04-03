@@ -1,0 +1,18 @@
+import com.atzu68.learning.gia.plugins.cloudbees.CloudBeesPlugin
+
+if (project.hasProperty('cloudbeesApiKey')) {
+    ext.apiKey = project.property('cloudbeesApiKey')
+}
+
+if (project.hasProperty('cloudbeesApiSecret')) {
+    ext.secret = project.property('cloudbeesApiSecret')
+}
+
+apply plugin: CloudBeesPlugin
+
+cloudBees {
+    apiUrl = 'https://api.cloudbees.com/api'
+    apiKey = project.apiKey
+    secret = project.secret
+    appId = 'gradle-in-action/todo'
+}
